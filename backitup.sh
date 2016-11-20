@@ -30,7 +30,7 @@ BACKUP="$HOME/bin/tarsnapper.py"
 # indicate that the filesystem is not mounted. In that case, you would place
 # your mount command in this string. If you want the script to exit when the
 # file does not exist, simply set this to a blank string.
-NOFILE="touch $LASTRUN"
+NOFILE='touch $LASTRUN'
 
 # Define the period, in seconds, for backups to attempt to execute.
 # Hourly:   3600
@@ -113,7 +113,7 @@ fi
 # was specified, exit.
 if [ ! -e "$LASTRUN" ]; then
     if [ -n "$NOFILE" ]; then
-        $NOFILE
+        eval $NOFILE
     else
         exit
     fi
