@@ -41,6 +41,9 @@ NOFILE='touch $LASTRUN'
 # period to the equivalent seconds.
 PERIOD='DAILY'
 
+# Define whether the backup should only be attempted on AC power.
+ACONLY='False'
+
 # End configuration here.
 ###############################################################################
 
@@ -52,8 +55,9 @@ Options:
     -p      the period for which backups should attempt to be executed
             (integer seconds or 'DAILY', 'WEEKLY' or 'MONTHLY')
     -b      the backup command to execute; note that this should be quoted if it contains a space
-    -l      the location of the file that holds the timestamp of the last successful backup.
-    -n      the command to be executed if the above file does not exist"
+    -l      the location of the file that holds the timestamp of the last successful backup
+    -n      the command to be executed if the above file does not exist
+    -a      only attempt to execute when on AC power"
 }
 
 backup() {
@@ -70,8 +74,19 @@ backup() {
     exit
 }
 
+on_battery() {
+    ac_status="/sys/class/power_supply/AC/online"
+    local result=false # Assume negative unless proven otherwise
+    if [ -e "$ac_status" ]; then
+        if [ "$(cat $ac_status)" = "0" ] ;then
+            result=true
+        fi
+    fi
+    echo "$result"
+}
+
 # Get any arguments.
-while getopts ":p:b:l:n:h" opt; do
+while getopts ":p:b:l:n:h:a" opt; do
     case $opt in
         p)
             PERIOD=$OPTARG
@@ -85,6 +100,9 @@ while getopts ":p:b:l:n:h" opt; do
         n)
             NOFILE=$OPTARG
             ;;
+        a)
+            ACONLY=true
+            ;;
         h)
             usage
             exit
@@ -97,6 +115,12 @@ while getopts ":p:b:l:n:h" opt; do
             ;;
     esac
 done
+
+# Bail out if on battery power and we only want to run on AC.
+if [ "$(on_battery)" = true ] && [ "$ACONLY" = true ]; then
+    echo "On battery power. Bailing out."
+    exit
+fi
 
 # Set the format of the time string to store.
 if [ $PERIOD == 'DAILY' ]; then
