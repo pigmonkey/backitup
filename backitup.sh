@@ -62,14 +62,14 @@ Options:
 
 backup() {
     # Execute the backup.
-    echo 'Executing backup...'
+    echo "Executing program: $BACKUP"
     $BACKUP
     # If the backup was succesful, store the current time.
     if [ $? -eq 0 ]; then
-        echo 'Backup completed.'
+        echo 'Program completed.'
         date $timeformat > "$LASTRUN"
     else
-        echo 'Backup failed.'
+        echo 'Program failed.'
     fi
     exit
 }
@@ -153,7 +153,7 @@ if [ -s "$LASTRUN" ]; then
         if [ $timestamp != `date $timeformat` ]; then
             backup
         else
-            echo "Already backed up once for period $PERIOD. Exiting."
+            echo "Already ran once for period $PERIOD. Exiting."
             exit
         fi
 
