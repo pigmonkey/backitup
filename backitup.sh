@@ -153,7 +153,7 @@ if [ -s "$LASTRUN" ]; then
         if [ $timestamp != `date $timeformat` ]; then
             backup
         else
-            echo "Already ran once for period $PERIOD. Exiting."
+            echo "Already executed once for period $PERIOD. Exiting."
             exit
         fi
 
@@ -165,7 +165,7 @@ if [ -s "$LASTRUN" ]; then
         if [ "$diff" -gt "$PERIOD" ]; then
             backup
         else
-            echo "Backed up less than $PERIOD seconds ago. Exiting."
+            echo "Executed less than $PERIOD seconds ago. Exiting."
             exit
         fi
     fi
