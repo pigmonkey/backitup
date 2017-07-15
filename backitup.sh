@@ -44,6 +44,9 @@ PERIOD='DAILY'
 # Define whether the backup should only be attempted on AC power.
 ACONLY='False'
 
+# Set the default verbosity level.
+VERBOSITY=1
+
 # End configuration here.
 ###############################################################################
 
@@ -57,19 +60,27 @@ Options:
     -b      the backup command to execute; note that this should be quoted if it contains a space
     -l      the location of the file that holds the timestamp of the last successful backup
     -n      the command to be executed if the above file does not exist
-    -a      only attempt to execute when on AC power"
+    -a      only attempt to execute when on AC power
+    -v      be verbose
+    -q      be quiet"
+}
+
+log() {
+    if [ "$1" -le "$VERBOSITY" ]; then
+        echo "$2"
+    fi
 }
 
 backup() {
     # Execute the backup.
-    echo "Executing program: $BACKUP"
+    log 1 "Executing program: $BACKUP"
     $BACKUP
     # If the backup was succesful, store the current time.
     if [ $? -eq 0 ]; then
-        echo 'Program completed.'
+        log 2 'Program completed.'
         date $timeformat > "$LASTRUN"
     else
-        echo 'Program failed.'
+        log 2 'Program failed.'
     fi
     exit
 }
@@ -86,7 +97,7 @@ on_battery() {
 }
 
 # Get any arguments.
-while getopts ":p:b:l:n:h:a" opt; do
+while getopts ":p:b:l:n:h:avq" opt; do
     case $opt in
         p)
             PERIOD=$OPTARG
@@ -99,6 +110,12 @@ while getopts ":p:b:l:n:h:a" opt; do
             ;;
         n)
             NOFILE=$OPTARG
+            ;;
+        v)
+            VERBOSITY=2
+            ;;
+        q)
+            VERBOSITY=0
             ;;
         a)
             ACONLY=true
@@ -118,7 +135,7 @@ done
 
 # Bail out if on battery power and we only want to run on AC.
 if [ "$(on_battery)" = true ] && [ "$ACONLY" = true ]; then
-    echo "On battery power. Bailing out."
+    log 2 "On battery power. Bailing out."
     exit
 fi
 
@@ -153,7 +170,7 @@ if [ -s "$LASTRUN" ]; then
         if [ $timestamp != `date $timeformat` ]; then
             backup
         else
-            echo "Already executed once for period $PERIOD. Exiting."
+            log 2 "Already executed once for period $PERIOD. Exiting."
             exit
         fi
 
@@ -165,7 +182,7 @@ if [ -s "$LASTRUN" ]; then
         if [ "$diff" -gt "$PERIOD" ]; then
             backup
         else
-            echo "Executed less than $PERIOD seconds ago. Exiting."
+            log 2 "Executed less than $PERIOD seconds ago. Exiting."
             exit
         fi
     fi
