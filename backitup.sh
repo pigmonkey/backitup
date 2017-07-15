@@ -7,9 +7,7 @@
 # timestamp stored in the file. If the timestamp is greater than a user-specified
 # period, the specified command is executed.
 #
-#
 # Hey yo but wait, back it up, hup, easy back it up
-#
 #
 # Author:   Pig Monkey (pm@pig-monkey.com)
 # Website:  https://github.com/pigmonkey/backups
@@ -78,7 +76,7 @@ backup() {
     # If the backup was succesful, store the current time.
     if [ $? -eq 0 ]; then
         log 2 'Program completed.'
-        date $timeformat > "$LASTRUN"
+        date "$timeformat" > "$LASTRUN"
     else
         log 2 'Program failed.'
     fi
@@ -140,11 +138,11 @@ if [ "$(on_battery)" = true ] && [ "$ACONLY" = true ]; then
 fi
 
 # Set the format of the time string to store.
-if [ $PERIOD == 'DAILY' ]; then
+if [ "$PERIOD" == "DAILY" ]; then
     timeformat='+%Y%m%d'
-elif [ $PERIOD == 'WEEKLY' ]; then
+elif [ "$PERIOD" == "WEEKLY" ]; then
     timeformat='+%G-W%W'
-elif [ $PERIOD == 'MONTHLY' ]; then
+elif [ "$PERIOD" == "MONTHLY" ]; then
     timeformat='+%Y%m'
 else
     timeformat='+%s'
@@ -166,8 +164,8 @@ if [ -s "$LASTRUN" ]; then
 
     # If the backup period is daily, weekly or monthly, perform the backup if
     # the stored timestamp is not equal to the current date in the same format.
-    if [ $PERIOD == 'DAILY' -o $PERIOD == 'WEEKLY' -o $PERIOD == 'MONTHLY' ]; then
-        if [ $timestamp != `date $timeformat` ]; then
+    if [ "$PERIOD" == "DAILY" ] || [ "$PERIOD" == "WEEKLY" ] || [ "$PERIOD" == "MONTHLY" ]; then
+        if [ "$timestamp" != $(date "$timeformat") ]; then
             backup
         else
             log 2 "Already executed once for period $PERIOD. Exiting."
@@ -178,7 +176,7 @@ if [ -s "$LASTRUN" ]; then
     # between the stored timestamp and the current time is greater than the
     # defined period.
     else
-        diff=$(( `date $timeformat` - $timestamp))
+        diff=$(( $(date "$timeformat") - timestamp))
         if [ "$diff" -gt "$PERIOD" ]; then
             backup
         else
