@@ -84,7 +84,11 @@ backup() {
 }
 
 on_battery() {
-    ac_status="/sys/class/power_supply/AC/online"
+    if [ -d "/sys/class/power_supply/ACAD" ]; then
+        ac_status="/sys/class/power_supply/ACAD/online"
+    else
+        ac_status="/sys/class/power_supply/AC/online"
+    fi
     local result=false # Assume negative unless proven otherwise
     if [ -e "$ac_status" ]; then
         if [ "$(cat $ac_status)" = "0" ] ;then
